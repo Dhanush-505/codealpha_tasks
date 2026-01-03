@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Basic Calculator</title>
+    <style>
+        :root{
+            --bg: #f3f4f6;
+            --panel: #ffffff;
+            --text: #111827;
+            --muted: #6b7280;
+            --accent: #3b82f6;
+            --btn: #e5e7eb;
+            --btn-text: #111827;
+            --op-btn: #f97316;
+            --op-btn-text: #fff;
+            --shadow: rgba(0,0,0,0.08);
+        }
+        [data-theme="dark"]{
+            --bg: #0b1220;
+            --panel: #0f1724;
+            --text: #e6eef8;
+            --muted: #94a3b8;
+            --accent: #60a5fa;
+            --btn: #111827;
+            --btn-text: #e6eef8;
+            --op-btn: #f97316;
+            --op-btn-text: #0b1220;
+            --shadow: rgba(0,0,0,0.6);
+        }
+
+        html,body{
+            height:100%;
+            margin:0;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            background:linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 90%, black 10%) 100%);
+            color:var(--text);
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+        }
+
+        .wrap{
+            min-height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:24px;
+        }
+
+        .calculator{
+            width:320px;
+            background:var(--panel);
+            border-radius:14px;
+            box-shadow: 0 8px 24px var(--shadow);
+            padding:18px;
+        }
+
+        .topbar{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            margin-bottom:12px;
+        }
+
+        .title{
+            font-weight:600;
+            font-size:14px;
+        }
+
+        .theme-toggle{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            background:transparent;
+            border:1px solid rgba(255,255,255,0.04);
+            color:var(--muted);
+            padding:6px 8px;
+            border-radius:10px;
+            cursor:pointer;
+            user-select:none;
+            font-size:13px;
+        }
+
+        /* visually hidden element for screen readers */
+        .sr-only{
+            position: absolute !important;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .display{
+            background:transparent;
+            color:var(--text);
+            font-size:28px;
+            padding:14px 12px;
+            border-radius:10px;
+            margin-bottom:12px;
+            min-height:56px;
+            display:flex;
+            align-items:center;
+            justify-content:flex-end;
+            word-break:break-all;
+        }
+
+        .small{
+            font-size:13px;
+            color:var(--muted);
+            display:block;
+            text-align:right;
+            margin-bottom:6px;
+        }
+
+        .pad{
+            display:grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap:10px;
+        }
+
+        button.key{
+            font-size:18px;
+            padding:14px;
+            border-radius:10px;
+            border:0;
+            background:var(--btn);
+            color:var(--btn-text);
+            cursor:pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+            transition:transform .06s ease, box-shadow .06s ease;
+            user-select:none;
+        }
+
+        button.key:active{ transform:translateY(1px); }
+
+        .key.op{
+            background:var(--op-btn);
+            color:var(--op-btn-text);
+            font-weight:600;
+        }
+
+        .key.span-2{
+            grid-column: span 2;
+        }
+
+        @media (max-width:360px){
+            .calculator{ width:100%; }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="wrap" id="root">
+        <div class="calculator" role="application" aria-label="Calculator">
+            <div class="topbar">
+                <div>
+                    <div class="title">Basic Calculator</div>
+                    <!-- status preserved for screen readers only -->
+                    <div id="secondary" class="sr-only" aria-live="polite">Ready</div>
+                </div>
+                <button class="theme-toggle" id="themeToggle" aria-pressed="false" title="Toggle theme">
+                    <span id="themeIcon">🌙</span>
+                    <span id="themeLabel">Dark</span>
+                </button>
+            </div>
+
+            <div class="display" id="display" aria-live="polite">0</div>
+
+            <div class="pad" role="group" aria-label="Calculator keypad">
+                <button class="key" data-action="clear">C</button>
+                <button class="key" data-action="back">⌫</button>
+                <button class="key" data-value="(">(</button>
+                <button class="key" data-value=")" >)</button>
+
+                <button class="key" data-value="7">7</button>
+                <button class="key" data-value="8">8</button>
+                <button class="key" data-value="9">9</button>
+                <button class="key op" data-value="÷">÷</button>
+
+                <button class="key" data-value="4">4</button>
+                <button class="key" data-value="5">5</button>
+                <button class="key" data-value="6">6</button>
+                <button class="key op" data-value="×">×</button>
+
+                <button class="key" data-value="1">1</button>
+                <button class="key" data-value="2">2</button>
+                <button class="key" data-value="3">3</button>
+                <button class="key op" data-value="-">−</button>
+
+                <button class="key span-2" data-value="0">0</button>
+                <button class="key" data-value=".">.</button>
+                <button class="key op" data-value="+">+</button>
+
+                <button class="key span-2 op" data-action="equals">=</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            const displayEl = document.getElementById('display');
+            const secondary = document.getElementById('secondary'); // may be absent; guard uses below
+            const keys = document.querySelectorAll('button.key');
+            const root = document.documentElement;
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const themeLabel = document.getElementById('themeLabel');
+
+            // Theme init
+            const saved = localStorage.getItem('calc-theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const initialTheme = saved || (prefersDark ? 'dark' : 'light');
+            setTheme(initialTheme);
+
+            function setTheme(t){
+                if(t === 'dark'){
+                    root.setAttribute('data-theme','dark');
+                    themeIcon.textContent = '☀️';
+                    themeLabel.textContent = 'Light';
+                    themeToggle.setAttribute('aria-pressed','true');
+                } else {
+                    root.removeAttribute('data-theme');
+                    themeIcon.textContent = '🌙';
+                    themeLabel.textContent = 'Dark';
+                    themeToggle.setAttribute('aria-pressed','false');
+                }
+                localStorage.setItem('calc-theme', t);
+            }
+
+            themeToggle.addEventListener('click', () => {
+                const now = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                setTheme(now);
+            });
+
+            // Calculator logic
+            let expr = '';
+            const maxLen = 40;
+
+            function updateDisplay(){
+                displayEl.textContent = expr || '0';
+            }
+
+            function append(ch){
+                if(expr.length >= maxLen) {
+                    flashSecondary('Max length');
+                    return;
+                }
+                // Prevent multiple dots in a number segment
+                if(ch === '.'){
+                    const parts = expr.split(/[\+\-\×\÷\*\/\(\)]/);
+                    const last = parts[parts.length-1] || '';
+                    if(last.includes('.')) return;
+                    if(last === '') ch = '0.';
+                }
+                expr += ch;
+                updateDisplay();
+            }
+
+            function clearAll(){
+                expr = '';
+                updateDisplay();
+                if(secondary) secondary.textContent = 'Cleared';
+            }
+
+            function backspace(){
+                expr = expr.slice(0, -1);
+                updateDisplay();
+            }
+
+            function flashSecondary(text, timeout=1000){
+                if(!secondary){ return; }
+                secondary.textContent = text;
+                clearTimeout(flashSecondary._t);
+                flashSecondary._t = setTimeout(()=> { if(secondary) secondary.textContent = 'Ready'; }, timeout);
+            }
+
+            function safeEvaluate(input){
+                // Allow only digits, spaces, parentheses, ., + - * / 
+                // Accept × and ÷ and replace them
+                const sanitized = input.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g,'-');
+                if(/[^0-9+\-*/().\s]/.test(sanitized)) throw new Error('Invalid characters');
+                // Prevent expressions like "2++3" by leaving evaluation to JS but you can further sanitize if needed.
+                // Use Function to evaluate safely in local context
+                return Function('"use strict";return (' + sanitized + ')')();
+            }
+
+            function evaluate(){
+                if(!expr) return;
+                try{
+                    const result = safeEvaluate(expr);
+                    expr = String(result);
+                    // trim long decimals
+                    if(expr.includes('.') && expr.length > 16){
+                        expr = Number(result).toPrecision(12).replace(/\.?0+$/,'');
+                    }
+                    updateDisplay();
+                    flashSecondary('Result');
+                } catch (e){
+                    flashSecondary('Error');
+                    // keep expr, or clear?
+                }
+            }
+
+            // Button clicks
+            keys.forEach(k=>{
+                k.addEventListener('click', ()=>{
+                    const val = k.dataset.value;
+                    const action = k.dataset.action;
+                    if(action === 'clear') clearAll();
+                    else if(action === 'back') backspace();
+                    else if(action === 'equals') evaluate();
+                    else if(val) append(val);
+                });
+            });
+
+            // Keyboard support
+            window.addEventListener('keydown', (ev)=>{
+                if(ev.metaKey || ev.ctrlKey) return;
+                const key = ev.key;
+                if(key >= '0' && key <= '9'){ append(key); ev.preventDefault(); return; }
+                if(key === '.') { append('.'); ev.preventDefault(); return; }
+                if(key === '+' || key === '-') { append(key); ev.preventDefault(); return; }
+                if(key === '*' || key === '/') { append(key === '*' ? '×' : '÷'); ev.preventDefault(); return; }
+                if(key === 'Enter' || key === '='){ evaluate(); ev.preventDefault(); return; }
+                if(key === 'Backspace'){ backspace(); ev.preventDefault(); return; }
+                if(key === 'Delete'){ clearAll(); ev.preventDefault(); return; }
+                if(key === '(' || key === ')'){ append(key); ev.preventDefault(); return; }
+            });
+
+            // Prevent accidental form submission or selection
+            document.addEventListener('dragstart', e => e.preventDefault());
+
+            // initial display
+            updateDisplay();
+        })();
+    </script>
+</body>
+</html>
